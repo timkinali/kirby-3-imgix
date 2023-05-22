@@ -59,7 +59,7 @@ Kirby::plugin('diesdasdigital/imgix', [
 
             if (option('imgix', false) !== false and $useImgix !== false) {
                 $url = imgix($file->mediaUrl(), $options);
-                dump('using');
+
                 return new FileVersion([
                     'modifications' => $options,
                     'original'      => $file,
