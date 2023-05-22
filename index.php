@@ -4,8 +4,9 @@ use Kirby\Cms\App;
 use Kirby\Cms\File;
 use Kirby\Cms\FileVersion;
 
-function endsWith($haystack, $needle) {
-    return substr($haystack,-strlen($needle))===$needle;
+function endsWith($haystack, $needle)
+{
+    return substr($haystack, -strlen($needle))===$needle;
 }
 
 function imgix($url, $params = [])
@@ -17,8 +18,11 @@ function imgix($url, $params = [])
     // always convert urls to path
     $path = Url::path($url);
 
+    // Per image option to exclude image from using imgix
+    $useImgix = $params['imgix'] ?? true;
+
     // return the plain url if imgix is deactivated
-    if (option('imgix', false) === false or option('imgix.domain', false) === false or endsWith($url, '.gif')) {
+    if (option('imgix', false) === false or option('imgix.domain', false) === false or endsWith($url, '.gif') or $useImgix === false) {
         return $url;
     }
 
@@ -35,8 +39,7 @@ function imgix($url, $params = [])
     foreach ($params as $key => $value) {
         if (isset($map[$key]) && !empty($value)) {
             $options[] = $map[$key] . '=' . $value;
-        }
-        elseif (!isset($map[$key]) && !empty($value)) {
+        } elseif (!isset($map[$key]) && !empty($value)) {
             $options[] = $key . '=' . $value;
         }
     }
@@ -49,12 +52,14 @@ function imgix($url, $params = [])
 Kirby::plugin('diesdasdigital/imgix', [
     'components' => [
         'file::version' => function (App $kirby, File $file, array $options = []) {
-
             static $originalComponent;
 
-            if (option('imgix', false) !== false) {
-                $url = imgix($file->mediaUrl(), $options);
+            // Per image option to exclude image from using imgix
+            $useImgix = $options['imgix'] ?? true;
 
+            if (option('imgix', false) !== false and $useImgix !== false) {
+                $url = imgix($file->mediaUrl(), $options);
+                dump('using');
                 return new FileVersion([
                     'modifications' => $options,
                     'original'      => $file,
@@ -71,7 +76,6 @@ Kirby::plugin('diesdasdigital/imgix', [
         },
 
         'file::url' => function (App $kirby, File $file): string {
-
             static $originalComponent;
 
             if (option('imgix', false) !== false) {
