@@ -1,5 +1,5 @@
 <?php
-// Tamburlane custom imgix test
+// Tamburlane custom imgix test2
 use Kirby\Cms\App;
 use Kirby\Cms\File;
 use Kirby\Cms\FileVersion;
