@@ -36,8 +36,6 @@ function imgix($url, $params = [])
         'width'   => 'w',
         'height'  => 'h',
     ];
-    // kirby()->site()->log("img " . $path);
-    kirby()->site()->log(dump($params, false));
 
     foreach ($params as $key => $value) {
         if (isset($map[$key]) && !empty($value)) {
@@ -63,6 +61,7 @@ Kirby::plugin('diesdasdigital/imgix', [
             if (option('imgix', false) !== false and $useImgix !== false) {
                 
                 // Support for K4 Focus
+                // Need access to $file so can't do this in imgix() function
                 if(isset($options['crop']) === true) {
                     // Kirby sets focus value in crop option if crop is set true
                     // isFocalPoint checks if 'crop' contains a focalpoint
