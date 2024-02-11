@@ -3,6 +3,7 @@
 use Kirby\Cms\App;
 use Kirby\Cms\File;
 use Kirby\Cms\FileVersion;
+use Kirby\Image\Focus;
 
 function endsWith($haystack, $needle)
 {
@@ -35,6 +36,8 @@ function imgix($url, $params = [])
         'width'   => 'w',
         'height'  => 'h',
     ];
+    // kirby()->site()->log("img " . $path);
+    kirby()->site()->log(dump($params, false));
 
     foreach ($params as $key => $value) {
         if (isset($map[$key]) && !empty($value)) {
@@ -56,10 +59,30 @@ Kirby::plugin('diesdasdigital/imgix', [
 
             // Per image option to exclude image from using imgix
             $useImgix = $options['imgix'] ?? true;
-
+            
             if (option('imgix', false) !== false and $useImgix !== false) {
+                
+                // Support for K4 Focus
+                if(isset($options['crop']) === true) {
+                    // Kirby sets focus value in crop option if crop is set true
+                    // isFocalPoint checks if 'crop' contains a focalpoint
+                    if (Focus::isFocalPoint($options['crop']) === true) {
+                        // Map keys so Imgix understands
+                        [$options['fp-x'], $options['fp-y']] = Focus::parse($options['crop']);
+                        $options['crop'] = 'focalpoint';
+                    }
+                    // If set to Imgix 'focalpoint' parameter we get the focus value from the file
+                    elseif ($options['crop'] === 'focalpoint') {
+                        if ($file->focus()->isNotEmpty()) {
+                            [$options['fp-x'], $options['fp-y']]  = Focus::parse($file->focus());
+                        } else {
+                            $options['crop'] = 'center';    
+                        }    
+                    }
+                }
+                
                 $url = imgix($file->mediaUrl(), $options);
-
+                   
                 return new FileVersion([
                     'modifications' => $options,
                     'original'      => $file,
