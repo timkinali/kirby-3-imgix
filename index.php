@@ -69,14 +69,20 @@ Kirby::plugin('diesdasdigital/imgix', [
                         // Map keys so Imgix understands
                         [$options['fp-x'], $options['fp-y']] = Focus::parse($options['crop']);
                         $options['crop'] = 'focalpoint';
+                        if(option('debug') === true) {
+                            $options['fp-debug'] = 'true';
+                        }
                     }
                     // If set to Imgix 'focalpoint' parameter we get the focus value from the file
-                    elseif ($options['crop'] === 'focalpoint') {
+                    // need Str:contains because it can be comma separated fallbacks, however
+                    elseif (Str::contains($options['crop'], 'focalpoint') === true) {
+                        kirby()->site()->log("Has crop=focalpoint:", "debug");
                         if ($file->focus()->isNotEmpty()) {
                             [$options['fp-x'], $options['fp-y']]  = Focus::parse($file->focus());
-                        } else {
-                            $options['crop'] = 'center';    
-                        }    
+                            if(option('debug') === true) {
+                                $options['fp-debug'] = 'true';
+                            }
+                        } 
                     }
                 }
                 
