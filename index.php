@@ -57,8 +57,33 @@ Kirby::plugin('diesdasdigital/imgix', [
 
             // Per image option to exclude image from using imgix
             $useImgix = $options['imgix'] ?? true;
-            
             if (option('imgix', false) !== false and $useImgix !== false) {
+            
+            // TODO: use a blueprint option to control if crop/duotone should be used for an image?
+            // TODO: block images should not use the page theme for duotone
+            // attempt to use user crop and duotone options for panel images
+            // Check if we are in panel, and leave the file image view alone
+            /* 
+            $path = $kirby->path(); //request path
+            if( Str::startsWith($path, 'panel/') && Str::contains($path, 'files/') === false ) {
+                
+                //returns page, site, user object
+                // optionally use $file->page() for just parent page?
+                //kirby()->site()->log(dump($file->blueprint(), false));
+                $p = $file->parent();  
+                $template = $p->template()->name();
+                
+                if($p && $p->disableDuotone()->isFalse() && ($template === 'artist' || $template === 'happening')) {
+                    $customOptions = $file->cropOptions(
+                        $file->duotoneOptions($p->themeFg(), $p->themeBg())
+                    );
+                }
+                else {
+                    $customOptions = $file->cropOptions();    
+                }
+                $options = A::merge($options, $customOptions);
+            } */
+                
                 
                 // Support for K4 Focus
                 // Need access to $file so can't do this in imgix() function
@@ -76,7 +101,7 @@ Kirby::plugin('diesdasdigital/imgix', [
                     // If set to Imgix 'focalpoint' parameter we get the focus value from the file
                     // need Str:contains because it can be comma separated fallbacks, however
                     elseif (Str::contains($options['crop'], 'focalpoint') === true) {
-                        kirby()->site()->log("Has crop=focalpoint:", "debug");
+                        //kirby()->site()->log("Has crop=focalpoint:", "debug");
                         if ($file->focus()->isNotEmpty()) {
                             [$options['fp-x'], $options['fp-y']]  = Focus::parse($file->focus());
                             if(option('debug') === true) {
