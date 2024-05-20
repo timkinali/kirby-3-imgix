@@ -63,15 +63,36 @@ Kirby::plugin('diesdasdigital/imgix', [
             // TODO: block images should not use the page theme for duotone
             // attempt to use user crop and duotone options for panel images
             // Check if we are in panel, and leave the file image view alone
-            /* 
+             
+            
+            //$panel = $file->panel();
+            
+            //kirby()->site()->log(dump($request->query()->data(), false));
+            //kirby()->site()->log('request', 'info', $request);
+            //kirby()->site()->log(dump($file->blueprint(), false));
             $path = $kirby->path(); //request path
-            if( Str::startsWith($path, 'panel/') && Str::contains($path, 'files/') === false ) {
-                
+            
+            
+            if( Str::startsWith($path, 'api/') && Str::endsWith($path, '/preview') === true ) {
+            //kirby()->site()->log(dump($this->model(), false));
+            kirby()->site()->log(dump($path, false));
+            $request = $kirby->request();
+           // kirby()->site()->log(dump($request->query()->data(), false));
+            //kirby()->site()->log(dump($options, false));
+            
+            //kirby()->site()->log(dump($p->blueprint()->sections(), false));
+            
+            
+            //kirby()->site()->log($path);
+            //kirby()->site()->log(dump($file->blueprint(), false));
+            //kirby()->site()->log(dump($request->query()->data(), false));    
+            
                 //returns page, site, user object
                 // optionally use $file->page() for just parent page?
-                //kirby()->site()->log(dump($file->blueprint(), false));
+                
                 $p = $file->parent();  
                 $template = $p->template()->name();
+                
                 
                 if($p && $p->disableDuotone()->isFalse() && ($template === 'artist' || $template === 'happening')) {
                     $customOptions = $file->cropOptions(
@@ -82,7 +103,7 @@ Kirby::plugin('diesdasdigital/imgix', [
                     $customOptions = $file->cropOptions();    
                 }
                 $options = A::merge($options, $customOptions);
-            } */
+            } 
                 
                 
                 // Support for K4 Focus
@@ -130,7 +151,7 @@ Kirby::plugin('diesdasdigital/imgix', [
 
         'file::url' => function (App $kirby, File $file): string {
             static $originalComponent;
-
+            
             if (option('imgix', false) !== false) {
                 if ($file->type() === 'image') {
                     return imgix($file->mediaUrl());
