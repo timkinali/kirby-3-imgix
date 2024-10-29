@@ -1,9 +1,13 @@
 <?php
-// Tamburlane custom imgix test2
+// Tamburlane custom imgix
+
 use Kirby\Cms\App;
 use Kirby\Cms\File;
 use Kirby\Cms\FileVersion;
 use Kirby\Image\Focus;
+use Kirby\Toolkit\Str;
+use Kirby\Toolkit\A;
+use Kirby\Http\Url;
 
 function endsWith($haystack, $needle)
 {
@@ -35,6 +39,7 @@ function imgix($url, $params = [])
   $map = [
     'width'   => 'w',
     'height'  => 'h',
+    'quality' => 'q'
   ];
 
   foreach ($params as $key => $value) {
@@ -57,52 +62,45 @@ Kirby::plugin('diesdasdigital/imgix', [
 
       // Per image option to exclude image from using imgix
       $useImgix = $options['imgix'] ?? true;
-      if (option('imgix', false) !== false and $useImgix !== false) {
-
-        /* 
-         *  WORK IN PROGRESS
-         *  
-         */
-        if (option('debug') === true) :
+      if (option('imgix', false) !== false and $useImgix !== false) {          
+        
+        // attempt to use user crop options for panel images
+        // Check if we are in panel, and leave the file image view alone            
+        $path = $kirby->path(); //request path
+        if( option('imgix.useCustomCropInPanel') === true && (Str::startsWith($path, 'api/') || Str::startsWith($path, 'panel/')) && Str::contains($path, 'files/') === false )
+        {
+         
+          # Simple way: merge existing options with cropoptions from blueprint
+          # Merge like this instead of passing $options as a parameter to cropOptions,
+          # to make $customOptions override $options (which contain default values)
+          $customOptions = $file->cropOptions();
+          $options = A::merge($options, $customOptions);  
+          
+          
+          # ... Or attempt to add duotone                
+          /*      
+          $p = $file->parent();  returns page, site, user object, optionally use $file->page()
+          $template = $p->template()->name();
+          if  ($p && $p->disableDuotone()->isFalse() && ($template === 'artist' || $template === 'happening')) {
+              $customOptions = $file->cropOptions($file->duotoneOptions($p->themeFg(), $p->themeBg()));
+          }
+          else {
+              $customOptions = $file->cropOptions();    
+          }
+          $options = A::merge($options, $customOptions);  
+          */
+          
           // TODO: use a blueprint option to control if crop/duotone should be used for an image?
           // TODO: block images should not use the page theme for duotone
-          // attempt to use user crop and duotone options for panel images
-          // Check if we are in panel, and leave the file image view alone
-
-          /* Junk that might be useful */
+          // Junk that might be useful 
           // if( Str::startsWith($path, 'api/') && Str::endsWith($path, 'preview') === true )
           // $panel = $file->panel();
           // kirby()->site()->log(dump($request->query()->data(), false));
           // kirby()->site()->log('request', 'info', $request);
           // kirby()->site()->log(dump($file->blueprint(), false));    
           // kirby()->site()->log(dump($p->blueprint()->sections(), false));
-
-          $path = $kirby->path(); //request path
-          if (
-            (Str::contains($path, 'pages/artists') || Str::contains($path, 'pages/evenemang'))
-            && !Str::contains($path, 'files')
-          ) {
-            # Simple way: merge existing options with cropoptions from blueprint
-            $options = $file->cropOptions($options);
-
-            # ... Or attempt to add duotone                
-            // returns page, site, user object, optionally use $file->page()
-
-            /*      
-            $p = $file->parent();  
-            $template = $p->template()->name();
-                    
-            if  ($p && $p->disableDuotone()->isFalse() && ($template === 'artist' || $template === 'happening')) {
-                $customOptions = $file->cropOptions($file->duotoneOptions($p->themeFg(), $p->themeBg()));
-            }
-            else {
-                $customOptions = $file->cropOptions();    
-            }
-            $options = A::merge($options, $customOptions);  
-            */
-          }
-        endif; //END WORK IN PROGRESS
-
+        }
+      
         // Support for K4 Focus
         // Need access to $file so can't do this in imgix() function
         if (isset($options['crop']) === true) {
