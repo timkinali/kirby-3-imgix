@@ -137,7 +137,9 @@ Kirby::plugin('diesdasdigital/imgix', [
           // Merge existing options with cropoptions from blueprint
           // Note: merge so $customOptions overrides $options 
           $customOptions = $file->cropOptions();
-          $options = A::merge($options, $customOptions);
+          if(!empty($customOptions)) {
+            $options = A::merge($options, $customOptions);
+          } 
         }
 
         // Url with all Imgix specific parameters
