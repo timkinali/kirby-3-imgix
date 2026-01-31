@@ -37,6 +37,7 @@ function imgix($file, $params = [])
   $defaults = option('imgix.defaults', []);
   $params = array_merge($defaults, $params);
   $params = convertFocus($file, $params);
+  $options = [];
 
   $map = [
     'width' => 'w',
@@ -44,18 +45,6 @@ function imgix($file, $params = [])
     'quality' => 'q'
   ];
 
-  // build query string 
-/*   $query = [];
-  
-  foreach ($params as $key => $value) {
-    if (empty($value)) {
-      continue;
-    }
-    $query[$map[$key] ?? $key] = $value;
-  }
-
-  $options = http_build_query($query, '', '&', PHP_QUERY_RFC3986); */
-  $options = [];
   foreach ($params as $key => $value) {
     if (isset($map[$key]) && !empty($value)) {
       $options[] = $map[$key] . '=' . $value;
@@ -104,8 +93,8 @@ function convertFocus($file, $options = [])
 }
 
 // Revert back to native Kirby options for the 'crop' option 
-// since we use it for imgix with values 
-// to not generate meaningless jobs or file versions for them (like filename-640x480-crop-faces)
+// since we also use it for imgix with values like 'faces' etc,
+// to not generate meaningless jobs or file versions for such values (like filename-640x480-crop-faces)
 // => Removes Imgix specific stuff and restores any focus set to Kirby standard
 function cleanModifications($file, $options = [])
 {
@@ -117,6 +106,9 @@ function cleanModifications($file, $options = [])
     // Other imgix crop options -> center
     elseif (in_array($options['crop'], ['faces', 'entropy', 'edges'])) {
       $options['crop'] = 'center';
+    }
+    elseif (in_array($options['crop'], ['none', 'false'])) {
+      $options['crop'] = false;
     }
   }
   return $options;
@@ -132,7 +124,7 @@ Kirby::plugin('diesdasdigital/imgix', [
       // Per image option to exclude image from using imgix
       $useImgix = $options['imgix'] ?? true;
 
-      if (option('imgix', false) !== false && $useImgix !== false) {
+      if (option('imgix', false) !== false && $useImgix !== false && $file->type() === 'image') {
 
        // Apply blueprint crop/focus options for panel images
        // Check if request path is in panel, but leave the file image view alone
