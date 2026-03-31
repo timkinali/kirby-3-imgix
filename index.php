@@ -110,7 +110,13 @@ function cleanModifications($file, $options = [])
     elseif (in_array($options['crop'], ['none', 'false'])) {
       $options['crop'] = false;
     }
+  } 
+  // Fix for when imgix is off and images not cropping, just resizing: 
+  // Assume crop should be true when both width and height is set
+  if (isset($options['crop']) === false && (isset($options['width']) && isset($options['height'])) ){
+    $options['crop'] = 'center';
   }
+  
   return $options;
   // Probably not needed since Kirby should ignore them anyway
   // return A::without($options, ['fit', 'facepad', 'ar', 'con', 'usm', 'duotone', 'duotone-alpha']);
