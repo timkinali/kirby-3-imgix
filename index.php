@@ -97,7 +97,7 @@ function convertFocus($file, $options = [])
 // to not generate meaningless jobs or file versions for such values (like filename-640x480-crop-faces)
 // => Removes Imgix specific stuff and restores any focus set to Kirby standard
 function cleanModifications($file, $options = [])
-{
+{ 
   if (isset($options['crop']) === true) {
     // Focalpoint -> coordinates
     if (Str::contains($options['crop'], 'focalpoint') === true) {
